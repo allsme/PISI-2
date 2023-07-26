@@ -34,9 +34,10 @@ def dist_percurso(percurso):
 #Definindo variáveis
 p = [(3,0),(1,1),(3,2),(0,4),(2,4)]    #Lista com coordenadas
 entradas=['R','A','B','C','D']         #letras respectivas das coordenadas
-lista_tempos = []                      #Lista para armazenar os tempos de execução dos pontos
 num_entradas = len(entradas)           #Lista para armazenar o número total de entradas
 
+#Lista para armazenar os tempos de execução dos pontos
+lista_tempos = []                      
 #Laço principal que itera sobre as permutações dos pontos de entrega e para cada permutação calcula a distância total do percurso.
 for i in range(1, num_entradas+1):
     tic = time.process_time_ns()
