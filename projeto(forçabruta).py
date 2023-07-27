@@ -63,7 +63,7 @@ for i in range(len(entradas)):
 # Imprime todas as menores rotas possíveis para o número total de entradas escolhido pelo usuário
 for percurso in menores_percursos:
     percurso_entradas = [coordenadas_para_entradas[coordenada] for coordenada in percurso]
-    print(f"Um dos menores percursos para {num_entradas} entradas foi {percurso_entradas} com a distancia de {menor} dronômetros")
+    print(f"Tempo médio para {num_entradas} entradas: {(toc - tic) / num_entradas} nanossegundos")
 
 #Criação do gráfico para comparar os tempos de execução
 plt.plot(range(1, num_entradas+1), lista_tempos)
