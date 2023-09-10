@@ -1,5 +1,7 @@
 from operator import attrgetter
 import random, sys, time, copy
+import matplotlib.pyplot as plt
+
 
 # Classe que representa um grafo
 class Grafo:
@@ -250,49 +252,61 @@ class PSO:
                     particula.setPBest(solucao_particula)
                     particula.setCustoPBest(custo_solucao_atual)
 
+# Leitura dos dados do "berlim52" (supondo que você tem um arquivo chamado "berlim52.tsp")
+def lerDadosBerlim52():
+    coordenadas = {}
+    with open("berlim52.tsp", "r") as file:
+        lines = file.readlines()
+        for line in lines:
+            if line.startswith("NODE_COORD_SECTION"):
+                break
+        for line in lines:
+            if line.startswith("EOF"):
+                break
+            parts = line.strip().split()
+            if len(parts) == 3:
+                node, x, y = map(int, parts)
+                coordenadas[node] = (x, y)
+    return coordenadas
+
+# Função principal
+def main():
+    coordenadas = []
+
+    # Lê as coordenadas do arquivo "berlin52.tsp"
+    a = 'berlin52.tsp'
+    with open(a) as obj_file:
+        lines = obj_file.readlines()
+        read_coordinates = False
+        for line in lines:
+            if line.strip() == "NODE_COORD_SECTION":
+                read_coordinates = True
+                continue
+            elif read_coordinates and line.strip() != "EOF":
+                parts = line.strip().split()
+                if len(parts) == 3:
+                    _, x, y = parts
+                    coordenadas.append((float(x), float(y)))
+
+    # Cria uma instância de Grafo com base nas coordenadas lidas
+    grafo_berlim52 = Grafo(quantidade_vertices=len(coordenadas))
+    
+    # Adicione as arestas ao grafo com as distâncias calculadas a partir das coordenadas
+    for i in range(len(coordenadas)):
+        for j in range(i + 1, len(coordenadas)):
+            x1, y1 = coordenadas[i]
+            x2, y2 = coordenadas[j]
+            distancia = round(((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5)
+            grafo_berlim52.adicionarAresta(i, j, distancia)
+            grafo_berlim52.adicionarAresta(j, i, distancia)
+
+    pso_berlim52 = PSO(grafo_berlim52, iteracoes=300, tamanho_populacao=300,  beta=0.3, alfa=0.5)
+    pso_berlim52.executar()  # Executa o algoritmo PSO
+    pso_berlim52.mostrarParticulas()  # Mostra as partículas
+
+    # Mostra o melhor caminho encontrado
+    print('Melhor caminho encontrado:', pso_berlim52.getGBest().getPBest())
+    print('Custo do melhor caminho:', pso_berlim52.getGBest().getCustoPBest())
 
 if __name__ == "__main__":
-
-    # Cria a instância de Grafo
-    grafo = Grafo(quantidade_vertices=5)
-
-    # Adiciona as arestas
-    grafo.adicionarAresta(0, 1, 1)
-    grafo.adicionarAresta(1, 0, 1)
-    grafo.adicionarAresta(0, 2, 3)
-    grafo.adicionarAresta(2, 0, 3)
-    grafo.adicionarAresta(0, 3, 4)
-    grafo.adicionarAresta(3, 0, 4)
-    grafo.adicionarAresta(0, 4, 5)
-    grafo.adicionarAresta(4, 0, 5)
-    grafo.adicionarAresta(1, 2, 1)
-    grafo.adicionarAresta(2, 1, 1)
-    grafo.adicionarAresta(1, 3, 4)
-    grafo.adicionarAresta(3, 1, 4)
-    grafo.adicionarAresta(1, 4, 8)
-    grafo.adicionarAresta(4, 1, 8)
-    grafo.adicionarAresta(2, 3, 5)
-    grafo.adicionarAresta(3, 2, 5)
-    grafo.adicionarAresta(2, 4, 1)
-    grafo.adicionarAresta(4, 2, 1)
-    grafo.adicionarAresta(3, 4, 2)
-    grafo.adicionarAresta(4, 3, 2)
-
-    # Cria uma instância de PSO
-    pso = PSO(grafo, iteracoes=100, tamanho_populacao=10, beta=1, alfa=0.9)
-    pso.executar()  # Executa o algoritmo PSO
-    pso.mostrarParticulas()  # Mostra as partículas
-
-    # Mostra a melhor partícula global
-    print('gbest: %s | custo: %d\n' % (pso.getGBest().getPBest(), pso.getGBest().getCustoPBest()))
-
-
-    # Grafo aleatório
-    print('Grafo aleatório...')
-    grafo_aleatorio = GrafoCompleto(quantidade_vertices=20)
-    grafo_aleatorio.gerar()
-    pso_grafo_aleatorio = PSO(grafo_aleatorio, iteracoes=10000, tamanho_populacao=10, beta=1, alfa=1)
-    pso_grafo_aleatorio.executar()
-    print('gbest: %s | custo: %d\n' % (pso_grafo_aleatorio.getGBest().getPBest(), 
-                    pso_grafo_aleatorio.getGBest().getCustoPBest()))
-
+    main()

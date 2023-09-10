@@ -1,7 +1,4 @@
-import random
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
+import random, numpy as np, seaborn as sns, matplotlib.pyplot as plt
 from typing import List, Tuple
 
 # Gera uma população inicial de indivíduos
@@ -144,25 +141,57 @@ def evolucao(coordenadas: List[Tuple[int, int]], taxa_mutacao: float, n_pop: int
         fitness_filhos = avaliar_pop(filhos, distancias)
         pop, fitness = selecao_sobreviventes(pop, filhos, fitness, fitness_filhos)
 
-        fitness_ao_longo_geracoes.append(fitness)
+        fitness_ao_longo_geracoes.append(np.min(fitness)) #Armazena o fitness do melhor indivíduo da geração
 
     return pop[np.argmin(fitness)], fitness_ao_longo_geracoes
 
+# Função para calcular a distância total de uma rota
+def calcular_distancia_total(rota: List[int], distancias: np.ndarray) -> float:
+    distancia_total = 0
+    for i in range(len(rota) - 1):
+        cidade_atual = rota[i]
+        proxima_cidade = rota[i + 1]
+        distancia_total += distancias[cidade_atual][proxima_cidade]
+    cidade_final = rota[-1]
+    cidade_inicial = rota[0]
+    distancia_total += distancias[cidade_final][cidade_inicial]
+    return distancia_total
+
 # Função principal
 def principal():
-    coordenadas = [(0, 4), (2, 4), (3, 0), (1, 1), (3, 2)]
+    coordenadas = []
+    file = 'berlin52.tsp'
 
-    taxa_mutacao = 0.01
+    with open(file) as obj_file:
+        lines = obj_file.readlines()
+        read_coordinates = False
+        for line in lines:
+            if line.strip() == "NODE_COORD_SECTION":
+                read_coordinates = True
+                continue
+            elif read_coordinates and line.strip() != "EOF":
+                parts = line.strip().split()
+                if len(parts) == 3:
+                    _, x, y = parts
+                    coordenadas.append((float(x), float(y)))
+
+    taxa_mutacao = 0.001
     n_pop = 100
-    n_geracoes = 1000
+    n_geracoes = 400
 
     melhor_rota, fitness_ao_longo_geracoes = evolucao(coordenadas, taxa_mutacao, n_pop, n_geracoes)
 
-    print(f"Melhor rota encontrada: {melhor_rota}")
+    # Calcula a distância total da melhor rota encontrada
+    distancias = calcular_distancias(coordenadas)
+    distancia_melhor_rota = calcular_distancia_total(melhor_rota, distancias)
 
-    sns.boxplot(data=fitness_ao_longo_geracoes)
+    print(f"Distância da melhor rota: {distancia_melhor_rota}")
+
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(data=fitness_ao_longo_geracoes, whis=1.5)
     plt.xlabel('Geração')
-    plt.ylabel('Fitness')
+    plt.ylabel('Fitness (Menor distância)')
+    plt.title('Evolução do fitness ao longo das gerações')
     plt.show()
 
 if __name__ == "__main__":
